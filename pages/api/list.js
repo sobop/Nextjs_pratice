@@ -1,4 +1,4 @@
-import { connectDB } from "@/util/database.js";
+import { connectDB } from "@/util/database";
 
 export default async function handler(a, b) {
   let db = (await connectDB).db("forum");
