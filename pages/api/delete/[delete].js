@@ -1,12 +1,20 @@
 import { connectDB } from "@/util/database";
 import { ObjectId } from "mongodb";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req, res) {
-  console.log(req.query);
+  let session = await getServerSession(req, res, authOptions);
   let db = (await connectDB).db("forum");
-  let result = await db
+  let user = await db
     .collection("post")
-    .deleteOne({ _id: new ObjectId(req.query.delete) });
-
-  return res.status(200).json();
+    .findOne({ _id: new ObjectId(req.query.delete) });
+  if (user.author === session.user.email) {
+    let result = await db
+      .collection("post")
+      .deleteOne({ _id: new ObjectId(req.query.delete) });
+    return res.status(200).json("삭제완료");
+  } else {
+    return res.status(500).json("현재유저와 작성자 불일치");
+  }
 }
